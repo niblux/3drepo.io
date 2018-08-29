@@ -1,24 +1,13 @@
-.simplebar-scroll-content,
-.simplebar-content {
-  padding: 0 !important;
-  margin: 0 !important;
+[data-simplebar=init] .simplebar-content,
+[data-simplebar=init] .simplebar-scroll-content {
+  min-height: 100%;
 }
 
-.simplebar-track {
-  position: absolute;
+[data-simplebar=init][data-simplebar-x-hidden] .simplebar-content {
+  overflow-x: hidden;
+  padding-bottom: 0 !important
 }
 
-.simplebar-track.horizontal {
-  right: 0;
-  top: 0;
+[data-simplebar=init][data-simplebar-y-hidden] .simplebar-content {
+  overflow-y: hidden;
 }
-
-/* .simplebar-track.horizontal {
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-.simplebar-track.vertical {
-  display: none;
-} */

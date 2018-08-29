@@ -53,7 +53,10 @@
 		layout-align="center center")
 		p Select a project to view the users' permissions
 
-	.permissionsListBody(ng-if="!vm.isLoading && vm.data.length" data-simplebar)
+	.permissionsListBody(
+		ng-if="!vm.isLoading && vm.data.length"
+		data-simplebar
+		data-simplebar-x-hidden)
 		div.permissionsListRow(
 			ng-repeat="row in vm.processedData track by row.user"
 			layout="row"
