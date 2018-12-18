@@ -14,5 +14,7 @@ export const COLOR = {
 	BLACK_40: 'rgba(0, 0, 0, .4)',
 	BLACK_50: 'rgba(0, 0, 0, .5)',
 	BLACK_60: 'rgba(0, 0, 0, .6)',
-	GRAY: '#f0f0f0'
+	GRAY: '#f0f0f0',
+	WARNING_LIGHT: '#FFEFEF',
+	WARNING: '#FFD5D5'
 };
