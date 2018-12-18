@@ -16,5 +16,17 @@
  */
 
 import styled from 'styled-components';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
 
-export const Container = styled.div``;
+export const Menu = styled(List)`
+  && {
+    padding: 0;
+  }
+`;
+
+export const MenuItem = styled(ListItem)`
+  && {
+    padding: 0;
+  }
+`;

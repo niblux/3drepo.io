@@ -19,27 +19,11 @@ import * as React from 'react';
 import { ButtonMenu } from './../buttonMenu/buttonMenu.component';
 import IconButton from '@material-ui/core/IconButton';
 import MoreIcon from '@material-ui/icons/MoreVert';
-import AddToPhotosSharpIcon from '@material-ui/icons/AddToPhotosSharp';
-import CompareArrowsTwoToneIcon from '@material-ui/icons/CompareArrowsTwoTone';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
 
+import { Menu, MenuItem } from './previewMenu.styles';
 interface IProps {
 	items: any[];
 }
-
-const items = [
-	{
-		Icon: AddToPhotosSharpIcon,
-		title: 'Print',
-		action: () => {}
-	},
-	{
-		Icon: CompareArrowsTwoToneIcon,
-		title: 'Test',
-		action: () => {}
-	}
-];
 
 const MenuButton = ({ IconProps, Icon, ...props }) => (
 	<IconButton
@@ -53,14 +37,14 @@ const MenuButton = ({ IconProps, Icon, ...props }) => (
 
 export class PreviewMenu extends React.PureComponent<IProps, any> {
 	public renderMenuContent = () => (
-		<List>
-			{ items.map(
+		<Menu>
+			{ this.props.items.map(
 				({ Icon, title, action }) =>
-					<ListItem key={title} button onClick={action}>
+					<MenuItem key={title} button onClick={action}>
 						<Icon/> {title}
-					</ListItem>
+					</MenuItem>
 			)}
-		</List>
+		</Menu>
 	)
 
 	public render() {
