@@ -24,6 +24,7 @@ export const COLOR = {
 	BLACK_50: hexToRgba(BLACK, .5),
 	BLACK_60: hexToRgba(BLACK, .6),
 	BLACK_80: hexToRgba(BLACK, .8),
+	BLACK_87: hexToRgba(BLACK, .87),
 
 	GRAY: '#f0f0f0',
 	WARNING_LIGHT: '#ffefef',
