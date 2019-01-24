@@ -75,6 +75,7 @@ export class ViewItem extends React.PureComponent<IProps, any> {
 					<Field name="newName" render={({ field, form }) => (
 						<NewViewpointName
 							{...field}
+							fullWidth
 							error={Boolean(form.errors.name)}
 							helperText={form.errors.name}
 							label="View name"
@@ -82,9 +83,9 @@ export class ViewItem extends React.PureComponent<IProps, any> {
 						/>
 					)} />
 					<IconsGroup>
-						<StyledCancelIcon color="secondary" onClick={this.props.onCancelEditMode} />
+						<StyledCancelIcon onClick={this.props.onCancelEditMode} />
 						<SaveIconButton type="submit" disableRipple={true}>
-							<StyledSaveIcon color="secondary" />
+							<StyledSaveIcon />
 						</SaveIconButton>
 					</IconsGroup>
 				</StyledForm>
