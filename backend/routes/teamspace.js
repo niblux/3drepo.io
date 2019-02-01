@@ -42,6 +42,13 @@
 	router.get("/members", middlewares.loggedIn, getMemberList);
 
 	/**
+	* @api {get} /members/:user Get Member details
+	* @apiName getMemberList
+	* @apiGroup Teamspace
+	*/
+	router.get("/members/:user", middlewares.isTeamspaceMember, getTeamMemberInfo);
+
+	/**
 	 * @api {delete} /members/:user Remove a team member
 	 * @apiName removeTeamMember
 	 * @apiGroup Teamspace
