@@ -75,14 +75,6 @@ const statusEnum = {
 	"CLOSED": C.ISSUE_STATUS_CLOSED
 };
 
-// FIXME
-/*const priorityEnum = {
-	"NONE": "none",
-	"LOW": "low",
-	"MEDIUM": "medium",
-	"HIGH": "high"
-};*/
-
 function clean(dbCol, issueToClean) {
 	const idKeys = ["_id", "rev_id", "parent"];
 	const commentIdKeys = ["rev_id", "guid", "viewpoint"];
@@ -180,7 +172,7 @@ function clean(dbCol, issueToClean) {
 	return issueToClean;
 }
 
-function setGroupIssueId(dbCol, data, issueId) {
+issue.setGroupIssueId = function(dbCol, data, issueId) {
 
 	const updateGroup = function(group_id) {
 		// TODO - Do we need to find group first? Can we just patch?
@@ -210,7 +202,7 @@ function setGroupIssueId(dbCol, data, issueId) {
 	}
 
 	return Promise.all(groupUpdatePromises);
-}
+};
 
 issue.createIssue = function(dbCol, newIssue) {
 	const sessionId = newIssue.sessionId;
@@ -244,7 +236,7 @@ issue.createIssue = function(dbCol, newIssue) {
 
 	if (newIssue.object_id) {
 		// FIXME
-		/*issueAttrPromises.push(
+		/* issueAttrPromises.push(
 			GenericObject.getSharedId(dbCol, data.object_id).then((sid) => {
 				newIssue.parent = utils.stringToUUID(sid);
 			})
@@ -311,7 +303,7 @@ issue.createIssue = function(dbCol, newIssue) {
 			};
 		}
 
-		return setGroupIssueId(dbCol, newIssue, newIssue._id);
+		return this.setGroupIssueId(dbCol, newIssue, newIssue._id);
 	}).then(() => {
 		newIssue.viewpoints = [newIssue.viewpoint];
 
@@ -759,8 +751,9 @@ issue.getSmallScreenshot = function(dbCol, uid, vid) {
 						db.getCollection(dbCol.account, dbCol.model + ".issues").then((_dbCol) => {
 							_dbCol.update({
 								_id: uid,
-								"viewpoints.guid": vid},
-								{$set: {"viewpoints.$.screenshot.resizedContent": resized}
+								"viewpoints.guid": vid
+							},{
+								$set: {"viewpoints.$.screenshot.resizedContent": resized}
 							}).catch((err) => {
 								systemLogger.logError("Error while saving resized screenshot",
 									{
