@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2014 3D Repo Ltd
+ *  Copyright (C) 2019 3D Repo Ltd
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -26,7 +26,7 @@ const Issue = require("../models/issue");
 const utils = require("../utils");
 const multer = require("multer");
 const config = require("../config.js");
-const User = require("../models/user");
+//const User = require("../models/user");
 const Job = require("../models/job");
 const ModelHelper = require("../models/helper/model");
 const ModelSetting = require("../models/modelSetting");
@@ -82,7 +82,6 @@ const stringToUUID = utils.stringToUUID;
  * }
  *
  */
-
 router.get("/issues/:uid.json", middlewares.issue.canView, findIssueById);
 
 /**
@@ -97,7 +96,6 @@ router.get("/issues/:uid.json", middlewares.issue.canView, findIssueById);
  * @apiSuccess 200 {Object} thumbnail Thumbnail Image
  *
  */
-
 router.get("/issues/:uid/thumbnail.png", middlewares.issue.canView, getThumbnail);
 
 /**
@@ -292,10 +290,7 @@ router.get("/revision/:rid/issues.bcfzip", middlewares.issue.canView, getIssuesB
  * }
  *
  */
-
 router.post("/revision/:rid/issues.bcfzip", middlewares.issue.canCreate, importBCF);
-
-// router.get('/issues/:sid.json', middlewares.issue.canView, listIssuesBySID);
 
 /**
  * @api {get} /issues.html Issues response into as HTML
@@ -304,7 +299,6 @@ router.post("/revision/:rid/issues.bcfzip", middlewares.issue.canCreate, importB
  *
  * @apiDescription Render all Issues into a HTML webpage, response is rendered HTML.
  */
-
 router.get("/issues.html", middlewares.issue.canView, renderIssuesHTML);
 
 /**
@@ -316,7 +310,6 @@ router.get("/issues.html", middlewares.issue.canView, renderIssuesHTML);
  *
  * @apiDescription Render all Issues into a HTML webpage based on current revision ID.
  */
-
 router.get("/revision/:rid/issues.html", middlewares.issue.canView, renderIssuesHTML);
 
 /**
@@ -326,7 +319,6 @@ router.get("/revision/:rid/issues.html", middlewares.issue.canView, renderIssues
  * *
  * @apiDescription Create a new issue. This is the same endpoint as listIssues, but a post request is required.
  */
-
 router.post("/issues.json", middlewares.issue.canCreate, storeIssue, middlewares.notification.onUpdateIssue, middlewares.chat.onNotification, responseCodes.onSuccessfulOperation);
 
 /**
@@ -341,7 +333,6 @@ router.post("/issues.json", middlewares.issue.canCreate, storeIssue, middlewares
  * @apiSuccess (200) {Object} Updated Issue Object.
  *
  */
-
 router.put("/issues/:issueId.json", middlewares.issue.canComment, updateIssue, middlewares.notification.onUpdateIssue, middlewares.chat.onNotification, responseCodes.onSuccessfulOperation);
 
 /**
@@ -351,7 +342,6 @@ router.put("/issues/:issueId.json", middlewares.issue.canComment, updateIssue, m
  *
  * @apiParam {String} rid Unique Revision ID to store.
  */
-
 router.post("/revision/:rid/issues.json", middlewares.issue.canCreate, storeIssue, responseCodes.onSuccessfulOperation);
 
 /**
@@ -362,7 +352,6 @@ router.post("/revision/:rid/issues.json", middlewares.issue.canCreate, storeIssu
  * @apiParam {String} rid Unique Revision ID to update to.
  * @apiParam {String} issueId Unique Issue ID to update.
  */
-
 router.put("/revision/:rid/issues/:issueId.json", middlewares.issue.canComment, updateIssue, middlewares.notification.onUpdateIssue, middlewares.chat.onNotification, responseCodes.onSuccessfulOperation);
 
 function storeIssue(req, res, next) {
@@ -380,89 +369,25 @@ function storeIssue(req, res, next) {
 }
 
 function updateIssue(req, res, next) {
+	const place = utils.APIInfo(req);
+	const dbCol = { account: req.params.account, model: req.params.model };
 	const data = req.body;
+
 	data.owner = req.session.user.username;
 	data.requester = req.session.user.username;
 	data.revId = req.params.rid;
 	data.sessionId = req.headers[C.HEADER_SOCKET_ID];
 
-	const dbCol = { account: req.params.account, model: req.params.model };
 	const issueId = req.params.issueId;
-	let action;
 
-	Issue.findById(dbCol, utils.stringToUUID(issueId)).then(issue => {
-		if (!issue) {
-			return Promise.reject({ resCode: responseCodes.ISSUE_NOT_FOUND });
-		}
-
-		req.oldDataModel = _.cloneDeep(issue.toObject());
-
-		if (data.hasOwnProperty("comment") && data.edit) {
-			action = issue.updateComment(data.commentIndex, data);
-
-		} else if (data.sealed) {
-			action = issue.updateComment(data.commentIndex, data);
-
-		} else if (data.commentIndex >= 0 && data.delete) {
-			action = issue.removeComment(data.commentIndex, data);
-
-		} else if (data.hasOwnProperty("comment")) {
-			action = issue.updateComment(null, data);
-
-		} else if (data.hasOwnProperty("closed") && data.closed) {
-			action = Promise.reject("This action is deprecated, use PUT issues/id.json {\"status\": \"closed\"}");
-
-		} else if (data.hasOwnProperty("closed") && !data.closed) {
-			action = Promise.reject("This action is deprecated, use PUT issues/id.json {\"status\": \"closed\"}");
-
-		} else {
-
-			action = User.findByUserName(req.params.account).then(dbUser => {
-
-				return Job.findByUser(dbUser.user, req.session.user.username).then(_job => {
-					const job = _job ? _job._id : null;
-					const accountPerm = dbUser.customData.permissions.findByUser(req.session.user.username);
-					const userIsAdmin = ModelHelper.isUserAdmin(
-						req.params.account,
-						req.params.model,
-						req.session.user.username
-					);
-
-					return userIsAdmin.then(projAdmin => {
-
-						const tsAdmin = accountPerm && accountPerm.permissions.indexOf(C.PERM_TEAMSPACE_ADMIN) !== -1;
-						const isAdmin = projAdmin || tsAdmin;
-						const hasOwnerJob = issue.creator_role === job && issue.creator_role && job;
-						const hasAssignedJob = job === issue.assigned_roles[0];
-
-						return issue.updateAttrs(data, isAdmin, hasOwnerJob, hasAssignedJob);
-
-					}).catch(err => {
-						if (err) {
-							return Promise.reject(err);
-						} else {
-							return Promise.reject(responseCodes.ISSUE_UPDATE_FAILED);
-						}
-					});
-
-				});
-
-			});
-		}
-
-		return action;
-
-	}).then(actionResult => {
-		req.dataModel = actionResult;
-		next();
-	}).catch(err => {
-		responseCodes.onError(req, res, err);
+	return Issue.updateAttrs(dbCol, issueId, data).then((issue) => {
+		responseCodes.respond(place, req, res, next, responseCodes.OK, issue);
+	}).catch((err) => {
+		responseCodes.respond(place, req, res, next, err.resCode || utils.mongoErrorToResCode(err), err.resCode ? {} : err);
 	});
 }
 
 function listIssues(req, res, next) {
-
-	// let params = req.params;
 	const place = utils.APIInfo(req);
 	const dbCol = { account: req.params.account, model: req.params.model, logger: req[C.REQ_REPO].logger };
 	const projection = {
@@ -506,8 +431,10 @@ function getIssuesBCF(req, res, next) {
 	let getBCFZipRS;
 
 	if (req.params.rid) {
+		// FIXME
 		getBCFZipRS = Issue.getBCFZipReadStream(account, model, req.session.user.username, null, req.params.rid, ids);
 	} else {
+		// FIXME
 		getBCFZipRS = Issue.getBCFZipReadStream(account, model, req.session.user.username, "master", null, ids);
 	}
 
@@ -530,40 +457,33 @@ function getIssuesBCF(req, res, next) {
 	}).catch(err => {
 		responseCodes.respond(place, req, res, next, err.resCode || utils.mongoErrorToResCode(err), err.resCode ? {} : err);
 	});
-
 }
 
 function findIssueById(req, res, next) {
-
 	const params = req.params;
 	const place = utils.APIInfo(req);
 	const dbCol = { account: req.params.account, model: req.params.model };
 
 	Issue.findByUID(dbCol, params.uid).then(issue => {
-
-		Issue.update(dbCol, { _id: stringToUUID(params.uid) }, { $inc: { viewCount: "1" } }).exec();
 		responseCodes.respond(place, req, res, next, responseCodes.OK, issue);
-
 	}).catch(err => {
 		responseCodes.respond(place, req, res, next, err.resCode || utils.mongoErrorToResCode(err), err.resCode ? {} : err);
 	});
-
 }
 
 function renderIssuesHTML(req, res, next) {
-
 	const place = utils.APIInfo(req);
 	const account = req.params.account;
 	const model = req.params.model;
 	const rid = req.params.rid;
 	const ids = req.query.ids ? req.query.ids.split(",") : undefined;
+
 	Issue.getIssuesReport(account, model, req.session.user.username, rid, ids, res).catch(err => {
 		responseCodes.respond(place, req, res, next, err.resCode || utils.mongoErrorToResCode(err), err.resCode ? {} : err);
 	});
 }
 
 function importBCF(req, res, next) {
-
 	const place = utils.APIInfo(req);
 
 	// check space
@@ -605,7 +525,7 @@ function importBCF(req, res, next) {
 		} else if (!req.file.size) {
 			return responseCodes.respond(place, req, res, next, responseCodes.FILE_FORMAT_NOT_SUPPORTED, responseCodes.FILE_FORMAT_NOT_SUPPORTED);
 		} else {
-
+			// FIXME
 			Issue.importBCF({ socketId: req.headers[C.HEADER_SOCKET_ID], user: req.session.user.username }, req.params.account, req.params.model, req.params.rid, req.file.path).then(() => {
 				responseCodes.respond(place, req, res, next, responseCodes.OK, { "status": "ok" });
 			}).catch(error => {
@@ -616,7 +536,6 @@ function importBCF(req, res, next) {
 }
 
 function getScreenshot(req, res, next) {
-
 	const place = utils.APIInfo(req);
 	const dbCol = { account: req.params.account, model: req.params.model };
 
@@ -625,11 +544,9 @@ function getScreenshot(req, res, next) {
 	}).catch(err => {
 		responseCodes.respond(place, req, res, next, err, err);
 	});
-
 }
 
 function getScreenshotSmall(req, res, next) {
-
 	const place = utils.APIInfo(req);
 	const dbCol = { account: req.params.account, model: req.params.model };
 
@@ -638,11 +555,9 @@ function getScreenshotSmall(req, res, next) {
 	}).catch(err => {
 		responseCodes.respond(place, req, res, next, err, err);
 	});
-
 }
 
 function getThumbnail(req, res, next) {
-
 	const place = utils.APIInfo(req);
 	const dbCol = { account: req.params.account, model: req.params.model };
 
@@ -651,7 +566,6 @@ function getThumbnail(req, res, next) {
 	}).catch(err => {
 		responseCodes.respond(place, req, res, next, err, err);
 	});
-
 }
 
 module.exports = router;
