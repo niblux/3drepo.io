@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2018 3D Repo Ltd
+ *  Copyright (C) 2019 3D Repo Ltd
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -212,10 +212,10 @@ function listRisks(req, res, next) {
 	const projection = {
 		extras: 0,
 		"comments": 0,
-		"viewpoint.extras": 0,
-		"viewpoint.scribble": 0,
-		"viewpoint.screenshot.content": 0,
-		"viewpoint.screenshot.resizedContent": 0,
+		"viewpoints.extras": 0,
+		"viewpoints.scribble": 0,
+		"viewpoints.screenshot.content": 0,
+		"viewpoints.screenshot.resizedContent": 0,
 		"thumbnail.content": 0
 	};
 
@@ -265,7 +265,7 @@ function getScreenshot(req, res, next) {
 	const place = utils.APIInfo(req);
 	const dbCol = {account: req.params.account, model: req.params.model};
 
-	Risk.getScreenshot(dbCol, req.params.uid).then(buffer => {
+	Risk.getScreenshot(dbCol, req.params.uid, req.params.vid).then(buffer => {
 		responseCodes.respond(place, req, res, next, responseCodes.OK, buffer, "png");
 	}).catch(err => {
 		responseCodes.respond(place, req, res, next, err, err);
@@ -278,7 +278,7 @@ function getScreenshotSmall(req, res, next) {
 	const place = utils.APIInfo(req);
 	const dbCol = {account: req.params.account, model: req.params.model};
 
-	Risk.getSmallScreenshot(dbCol, req.params.uid).then(buffer => {
+	Risk.getSmallScreenshot(dbCol, req.params.uid, req.params.vid).then(buffer => {
 		responseCodes.respond(place, req, res, next, responseCodes.OK, buffer, "png");
 	}).catch(err => {
 		responseCodes.respond(place, req, res, next, err, err);
