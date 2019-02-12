@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2017 3D Repo Ltd
+ *  Copyright (C) 2019 3D Repo Ltd
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -15,22 +15,19 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createSelector } from 'reselect';
+import api from './';
 
-export const selectJobsDomain = (state) => Object.assign({}, state.jobs);
+/**
+ * Return logged user profile
+ */
+export const fetchProfile = () => {
+	return api.get('me');
+};
 
-export const selectJobs = createSelector(
-	selectJobsDomain, (state) => state.jobs
-);
+export const generateApiKey = () => {
+	return api.post('apikey');
+};
 
-export const selectJobsColors = createSelector(
-	selectJobsDomain, (state) => state.colors
-);
-
-export const selectJobsList = createSelector(
-	selectJobs, (jobs) => jobs.map(({ _id: name, color }) => ({ name, color, value: name }))
-);
-
-export const selectMyJob = createSelector(
-	selectJobsDomain, (state) => state.myJob
-);
+export const deleteApiKey = () => {
+	return api.delete('apikey');
+};

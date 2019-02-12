@@ -33,19 +33,21 @@ import {
 	selectRisksMap,
 	selectActiveRiskDetails
 } from './risks.selectors';
-import { selectJobsList } from '../jobs';
+import { selectJobsList, selectMyJob } from '../jobs';
 import { selectCurrentUser } from '../currentUser';
+import { searchByFilters } from '../../helpers/searching';
+import { RISK_LEVELS } from '../../constants/risks';
 
 export function* fetchRisks({teamspace, modelId, revision}) {
 	yield put(RisksActions.togglePendingState(true));
 	try {
 		const {data} = yield API.getRisks(teamspace, modelId, revision);
 		const jobs = yield select(selectJobsList);
-
 		const preparedRisks = data.map((risk) => prepareRisk(risk, jobs));
-
 		yield put(RisksActions.fetchRisksSuccess(preparedRisks));
-		yield put(RisksActions.renderPins(data));
+		const filteredRisks = searchByFilters(preparedRisks, [], false);
+
+		yield put(RisksActions.renderPins(filteredRisks));
 	} catch (error) {
 		yield put(DialogActions.showErrorDialog('get', 'risks', error));
 	}
@@ -86,11 +88,13 @@ const toggleRiskPin = (risk, selected = true) => {
 export function* saveRisk({ teamspace, model, riskData, revision, filteredRisks }) {
 	try {
 		yield Viewer.setPinDropMode(false);
+		const myJob = yield select(selectMyJob);
+
 		const [viewpoint, objectInfo, screenshot, userJob] = yield all([
 			Viewer.getCurrentViewpoint({ teamspace, model }),
 			Viewer.getObjectsStatus(),
 			riskData.descriptionThumbnail || Viewer.getScreenshot(),
-			API.getMyJob(teamspace)
+			myJob
 		]);
 
 		const TreeService = getAngularService('TreeService') as any;
@@ -515,6 +519,17 @@ export function* setNewRisk() {
 	}
 }
 
+export function* onFiltersChange({ selectedFilters }) {
+	yield put(RisksActions.setComponentState({ selectedFilters }));
+	const risks = yield select(selectRisks);
+	const jobs = yield select(selectJobsList);
+	const preparedRisks = risks.map((risk) => prepareRisk(risk, jobs));
+	const returnHiddenRisk = selectedFilters.some(({ value: { value }}) => value === RISK_LEVELS.AGREED_FULLY);
+	const filteredRisks = searchByFilters(preparedRisks, selectedFilters, returnHiddenRisk);
+
+	yield put(RisksActions.renderPins(filteredRisks));
+}
+
 export default function* RisksSaga() {
 	yield takeLatest(RisksTypes.FETCH_RISKS, fetchRisks);
 	yield takeLatest(RisksTypes.SAVE_RISK, saveRisk);
@@ -532,4 +547,5 @@ export default function* RisksSaga() {
 	yield takeLatest(RisksTypes.FOCUS_ON_RISK, focusOnRisk);
 	yield takeLatest(RisksTypes.SET_NEW_RISK, setNewRisk);
 	yield takeLatest(RisksTypes.UPDATE_NEW_RISK, updateNewRisk);
+	yield takeLatest(RisksTypes.ON_FILTERS_CHANGE, onFiltersChange);
 }

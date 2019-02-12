@@ -35,6 +35,7 @@ import {
 	SaveIconButton,
 	StyledSaveIcon
 } from './viewItem.styles';
+import { DeleteMessage } from '../../../../../components/deleteMessage/deleteMessage.component';
 
 interface IProps {
 	viewpoint: any;
@@ -47,6 +48,7 @@ interface IProps {
 	onDelete?: (event) => void;
 	onOpenEditMode?: () => void;
 	onClick?: (viewpoint) => void;
+	onChangeName?: (viewpointName) => void;
 }
 
 export class ViewItem extends React.PureComponent<IProps, any> {
@@ -60,8 +62,8 @@ export class ViewItem extends React.PureComponent<IProps, any> {
 		<NameRow>
 			<Name>{this.props.viewpoint.name}</Name>
 			<IconsGroup>
-				<StyledEditIcon color="secondary" onClick={this.props.onOpenEditMode} />
-				<StyledDeleteIcon color="secondary" onClick={this.props.onDelete} />
+				<StyledEditIcon onClick={this.props.onOpenEditMode} />
+				<StyledDeleteIcon onClick={this.props.onDelete} />
 			</IconsGroup>
 		</NameRow>
 	));
@@ -75,6 +77,7 @@ export class ViewItem extends React.PureComponent<IProps, any> {
 					<Field name="newName" render={({ field, form }) => (
 						<NewViewpointName
 							{...field}
+							onChange={this.handleNameChange(field)}
 							fullWidth
 							error={Boolean(form.errors.name)}
 							helperText={form.errors.name}
@@ -100,15 +103,26 @@ export class ViewItem extends React.PureComponent<IProps, any> {
 		/>
 	));
 
+	public renderDeleteMessage = renderWhenTrue(() => <DeleteMessage content="This view has been deleted" />);
+
+	public handleNameChange = (field) => (event) => {
+		field.onChange(event);
+
+		if (this.props.onChangeName) {
+			this.props.onChangeName(event.target.value);
+		}
+	}
+
 	public render() {
 		const { viewpoint, onClick, active } = this.props;
 
 		return (
 			<ViewpointItem
+				disabled={viewpoint.willBeRemoved}
 				disableRipple
 				onClick={onClick}
 				active={Number(active)}>
-
+				{this.renderDeleteMessage(viewpoint.willBeRemoved)}
 				{this.renderScreenshot(viewpoint)}
 				{this.renderScreenshotPlaceholder(!viewpoint.screenshot.thumbnailUrl)}
 				{this.renderViewpointForm(this.props.active && this.props.editMode)}

@@ -15,22 +15,20 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createSelector } from 'reselect';
+import * as React from 'react';
 
-export const selectJobsDomain = (state) => Object.assign({}, state.jobs);
+import { Container, Message } from './deleteMessage.styles';
 
-export const selectJobs = createSelector(
-	selectJobsDomain, (state) => state.jobs
-);
+interface IProps {
+	content: string;
+}
 
-export const selectJobsColors = createSelector(
-	selectJobsDomain, (state) => state.colors
-);
-
-export const selectJobsList = createSelector(
-	selectJobs, (jobs) => jobs.map(({ _id: name, color }) => ({ name, color, value: name }))
-);
-
-export const selectMyJob = createSelector(
-	selectJobsDomain, (state) => state.myJob
-);
+export class DeleteMessage extends React.PureComponent<IProps, any> {
+	public render() {
+		return (
+			<Container>
+				<Message>{this.props.content}</Message>
+			</Container>
+		);
+	}
+}

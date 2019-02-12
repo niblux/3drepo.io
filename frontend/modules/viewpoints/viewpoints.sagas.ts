@@ -118,6 +118,13 @@ export function* subscribeOnViewpointChanges({ teamspace, modelId }) {
 	const viewsNotifications = yield ChatService.getChannel(teamspace, modelId).views;
 
 	const onUpdated = (updatedView) => dispatch(ViewpointsActions.updateViewpointSuccess(updatedView));
+	const onDeleted = (deletedView) => {
+		dispatch(ViewpointsActions.showDeleteInfo(deletedView));
+
+		setTimeout(() => {
+			dispatch(ViewpointsActions.deleteViewpointSuccess(deletedView));
+		}, 5000);
+	};
 	const onCreated = (createdView) => {
 		if (createdView.screenshot.thumbnail) {
 			createdView.screenshot.thumbnailUrl = getThumbnailUrl(createdView.screenshot.thumbnail);
@@ -125,7 +132,6 @@ export function* subscribeOnViewpointChanges({ teamspace, modelId }) {
 		dispatch(ViewpointsActions.createViewpointSuccess(createdView));
 
 	};
-	const onDeleted = (deletedView) => dispatch(ViewpointsActions.deleteViewpointSuccess(deletedView));
 
 	viewsNotifications.subscribeToUpdated(onUpdated, this);
 	viewsNotifications.subscribeToCreated(onCreated, this);
@@ -147,7 +153,7 @@ export function* unsubscribeOnViewpointChanges({ teamspace, modelId }) {
 
 export function* showViewpoint({ teamspace, modelId, view }) {
 	try {
-		yield put(ViewpointsActions.setComponentState({ activeViewpointId: view._id }));
+		yield put(ViewpointsActions.setComponentState({ activeViewpoint: view }));
 
 		const ViewerService = yield getAngularService('ViewerService') as any;
 
@@ -170,7 +176,7 @@ export function* showViewpoint({ teamspace, modelId, view }) {
 			}
 		}
 	} catch (error) {
-		yield put(ViewpointsActions.setComponentState({ activeViewpointId: null }));
+		yield put(ViewpointsActions.setComponentState({ activeViewpoint: null }));
 		yield put(DialogActions.showErrorDialog('show', 'viewpoint'));
 	}
 }

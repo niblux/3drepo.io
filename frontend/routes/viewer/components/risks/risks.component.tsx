@@ -92,6 +92,7 @@ interface IProps {
 	subscribeOnRiskChanges: (teamspace, modelId) => void;
 	unsubscribeOnRiskChanges: (teamspace, modelId) => void;
 	saveRisk: (teamspace, modelId, risk, filteredRisks) => void;
+	onFiltersChange: (selectedFilters) => void;
 }
 
 interface IState {
@@ -243,9 +244,9 @@ export class Risks extends React.PureComponent<IProps, IState> {
 		return false;
 	}
 
-  public handleFilterChange = (selectedFilters) => {
-	  this.props.setState({ selectedFilters });
-  }
+	public handleFilterChange = (selectedFilters) => {
+		this.props.onFiltersChange(selectedFilters);
+	}
 
 	public getFilterValues(property) {
 		return property.map(({value, name}) => {

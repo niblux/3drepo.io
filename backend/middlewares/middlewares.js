@@ -31,6 +31,7 @@
 	const checkMultiplePermissions = require("./checkPermissions").checkMultiplePermissions;
 	const hasReadAccessToModelHelper = require("./checkPermissions").hasReadAccessToModelHelper;
 	const isAccountAdminHelper = require("./checkPermissions").isAccountAdminHelper;
+	const validateUserSession = require("./checkPermissions").validateUserSession;
 
 	const readAccessToModel = [C.PERM_VIEW_MODEL];
 
@@ -71,9 +72,7 @@
 	}
 
 	function isTeamspaceMember(req, res, next) {
-		if (!req.session || !req.session.hasOwnProperty(C.REPO_SESSION_USER)) {
-			responseCodes.respond("Check logged in middleware", req, res, next, responseCodes.AUTH_ERROR, null, req.params);
-		} else {
+		return validateUserSession(req).then(() => {
 			const teamspace = req.params.account;
 			const user = req.session.user.username;
 			return User.teamspaceMemberCheck(teamspace, user).then(() => {
@@ -81,7 +80,9 @@
 			}).catch(err => {
 				responseCodes.respond(utils.APIInfo(req), req, res, next, err, err);
 			});
-		}
+		}).catch((err) => {
+			next(err);
+		});
 	}
 
 	function hasCollaboratorQuota(req, res, next) {

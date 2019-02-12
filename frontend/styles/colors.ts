@@ -27,6 +27,7 @@ export const COLOR = {
 	BLACK_87: hexToRgba(BLACK, .87),
 
 	GRAY: '#f0f0f0',
+	GRAY_60: 'rgba(189, 189, 189, .6)',
 	WARNING_LIGHT: '#ffefef',
 	WARNING: '#ffd5d5',
 	MAROON: '#800000',
