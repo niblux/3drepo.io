@@ -34,6 +34,9 @@ function stopQueue(done) {
 function startQueue(done) {
 	const exec = require("child_process").exec;
 	exec("sudo service rabbitmq-server start", (err, stdout, stderr) => {
+		console.log("Starting the queue...");
+		console.log(stdout);
+		console.log(stderr);
 		done(err);
 	});
 }
