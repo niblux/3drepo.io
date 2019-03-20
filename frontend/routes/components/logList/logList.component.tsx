@@ -24,7 +24,9 @@ import { Loader } from '../../components/loader/loader.component';
 interface IProps {
 	items: any[];
 	isPending: boolean;
+	currentUser: string;
 	teamspace: string;
+	innerRef?: any;
 	removeLog: (index, guid) => void;
 	setCameraOnViewpoint: (viewpoint) => void;
 }

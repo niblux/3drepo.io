@@ -32,21 +32,17 @@ export const prepareRisk = (risk, jobs = []) => {
 	const descriptionThumbnail = risk.viewpoint && risk.viewpoint.screenshot
 		? getAPIUrl(risk.viewpoint.screenshot)
 		: (risk.descriptionThumbnail || '');
-
 	const residualLikelihood = getValidNumber(risk.residual_likelihood, risk.likelihood);
 	const residualConsequence = getValidNumber(risk.residual_consequence, risk.consequence);
-
 	const levelOfRisk = getValidNumber(risk.level_of_risk, calculateLevelOfRisk(risk.likelihood, risk.consequence));
 	const residualLevelOfRisk = getValidNumber(
 		risk.residual_level_of_risk,
 		calculateLevelOfRisk(residualLikelihood, residualConsequence)
 	);
-
-	let overallLevelOfRisk = getValidNumber(
+	const overallLevelOfRisk = getValidNumber(
 		risk.overall_level_of_risk,
 		getValidNumber(residualLevelOfRisk, levelOfRisk)
 	);
-
 	const { Icon, color } = getRiskStatus(overallLevelOfRisk, risk.mitigation_status);
 	const roleColor = get(jobs.find((job) => job.name === get(risk.assigned_roles, '[0]')), 'color');
 
@@ -107,7 +103,7 @@ export const getRiskStatus = (levelOfRisk: number, mitigationStatus: string) => 
 		color: RISK_LEVELS_COLOURS[levelOfRisk].color
 	};
 
-	return statusIcon;
+	return {...statusIcon};
 };
 
 export const getRiskPinColor = (levelOfRisk: number, selected: boolean = false) => {
@@ -156,7 +152,7 @@ const isJobOwner = (riskData, userJob, permissions, currentUser) => {
 		!isViewer(permissions);
 };
 
-const getValidNumber = (value, defaultValue?) => {
+export const getValidNumber = (value, defaultValue?) => {
 	if (!isNaN(value)) {
 		return value;
 	}

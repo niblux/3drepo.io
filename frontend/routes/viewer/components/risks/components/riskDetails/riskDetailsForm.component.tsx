@@ -19,8 +19,10 @@ import * as React from 'react';
 import * as Yup from 'yup';
 import { debounce, get, isEmpty, isEqual } from 'lodash';
 import { connect, Field, Form, withFormik, Formik } from 'formik';
-import InputLabel from '@material-ui/core/InputLabel';
 
+import InputLabel from '@material-ui/core/InputLabel';
+import { Image } from '../../../../../components/image';
+import { Container, FieldsContainer, FieldsRow, StyledFormControl, DescriptionImage } from './riskDetails.styles';
 import {
 	LEVELS_OF_RISK,
 	RISK_CATEGORIES,
@@ -28,25 +30,16 @@ import {
 	RISK_LIKELIHOODS,
 	RISK_MITIGATION_STATUSES
 } from '../../../../../../constants/risks';
-import { calculateLevelOfRisk } from '../../../../../../helpers/risks';
-import { VALIDATIONS_MESSAGES } from '../../../../../../services/validation';
 import { CellSelect } from '../../../../../components/customTable/components/cellSelect/cellSelect.component';
+import { VALIDATIONS_MESSAGES } from '../../../../../../services/validation';
+import { calculateLevelOfRisk } from '../../../../../../helpers/risks';
 import { TextField } from '../../../../../components/textField/textField.component';
-import { Container, FieldsContainer, FieldsRow, StyledFormControl, DescriptionImage } from './riskDetails.styles';
-import { Image } from '../../../../../components/image';
-
-export const RiskSchema = Yup.object().shape({
-	description: Yup.string().max(220, VALIDATIONS_MESSAGES.TOO_LONG_STRING),
-	mitigation_desc: Yup.string().max(220, VALIDATIONS_MESSAGES.TOO_LONG_STRING),
-	residual_risk: Yup.string().max(220, VALIDATIONS_MESSAGES.TOO_LONG_STRING)
-});
 
 interface IProps {
-	canUpdateRisk: boolean;
 	risk: any;
 	jobs: any[];
-	values: any;
 	formik: any;
+	values: any;
 	associatedActivities: any[];
 	permissions: any;
 	currentUser: any;
@@ -61,9 +54,13 @@ interface IState {
 	isSaving: boolean;
 }
 
-class RiskDetailsFormComponent extends React.PureComponent<IProps, IState> {
-	public formRef = React.createRef();
+export const RiskSchema = Yup.object().shape({
+	description: Yup.string().max(220, VALIDATIONS_MESSAGES.TOO_LONG_STRING),
+	mitigation_desc: Yup.string().max(220, VALIDATIONS_MESSAGES.TOO_LONG_STRING),
+	residual_risk: Yup.string().max(220, VALIDATIONS_MESSAGES.TOO_LONG_STRING)
+});
 
+class RiskDetailsFormComponent extends React.PureComponent<IProps, IState> {
 	public state = {
 		isSaving: false
 	};
@@ -130,7 +127,7 @@ class RiskDetailsFormComponent extends React.PureComponent<IProps, IState> {
 		}
 
 		this.setState({ isSaving: true }, () => {
-			this.props.formik.setFieldValue();
+			formik.setFieldValue();
 			handleSubmit();
 			this.setState({ isSaving: false });
 		});
@@ -143,6 +140,8 @@ class RiskDetailsFormComponent extends React.PureComponent<IProps, IState> {
 	}
 
 	public render() {
+		const { risk, myJob, permissions, currentUser } = this.props;
+
 		return (
 			<Form>
 				<FieldsRow container alignItems="center" justify="space-between">

@@ -46,9 +46,9 @@ export const { Types: RisksTypes, Creators: RisksActions } = createActions({
 	focusOnRisk: ['risk', 'filteredRisks', 'revision'],
 	subscribeOnRiskCommentsChanges: ['teamspace', 'modelId', 'riskId'],
 	unsubscribeOnRiskCommentsChanges: ['teamspace', 'modelId', 'riskId'],
-	createCommentSuccess: ['comment'],
-	deleteCommentSuccess: ['commentGuid'],
-	updateCommentSuccess: ['comment'],
+	createCommentSuccess: ['comment', 'riskId'],
+	deleteCommentSuccess: ['commentGuid', 'riskId'],
+	updateCommentSuccess: ['comment', 'riskId'],
 	updateNewRisk: ['newRisk'],
 	onFiltersChange: ['selectedFilters']
 }, { prefix: 'RISKS_' });
@@ -96,11 +96,11 @@ export const fetchRisksSuccess = (state = INITIAL_STATE, { risks = [] }) => {
 export const fetchRiskSuccess = (state = INITIAL_STATE, { risk }) => {
 	const risksMap = cloneDeep(state.risksMap);
 	risksMap[risk._id].comments = risk.comments;
-	return {...state, risksMap, componentState: { ...state.componentState, logs: risk.comments, failedToLoad: false }};
+	return {...state, risksMap, componentState: { ...state.componentState, failedToLoad: false }};
 };
 
 export const fetchRiskFailure = (state = INITIAL_STATE) => {
-	return {...state, componentState: { ...state.componentState, logs: [], failedToLoad: true }};
+	return {...state, componentState: { ...state.componentState, failedToLoad: true }};
 };
 
 export const saveRiskSuccess = (state = INITIAL_STATE, { risk }) => {
@@ -118,35 +118,37 @@ export const setComponentState = (state = INITIAL_STATE, { componentState = {} }
 	return { ...state, componentState: { ...state.componentState, ...componentState } };
 };
 
-export const createCommentSuccess = (state = INITIAL_STATE, { comment }) => {
-	const clonedLogs = cloneDeep(state.componentState.logs);
-	const updatedLogs = clonedLogs.map((log) => {
-		log.sealed = true;
-		return log;
-	});
-
-	let logs;
+export const createCommentSuccess = (state = INITIAL_STATE, { comment, riskId }) => {
+	const risksMap = cloneDeep(state.risksMap);
+	const risk = risksMap[riskId];
+	const updatedLogs = risk.comments.map((log) => ({...log, sealed: true, new: true }));
+	console.debug(updatedLogs);
 
 	if (comment.action || comment.viewpoint) {
-		logs = [comment, ...updatedLogs];
+		risk.comments = [comment, ...updatedLogs];
 	} else {
-		logs = updatedLogs;
+		risk.comments = updatedLogs;
 	}
 
-	return {...state, componentState: { ...state.componentState, logs }};
+	risksMap[riskId] = risk;
+
+	return {...state, risksMap };
 };
 
-export const updateCommentSuccess = (state = INITIAL_STATE, { comment }) => {
-	const logs = cloneDeep(state.componentState.logs);
-	const commentIndex = state.componentState.logs.findIndex((log) => log.guid === comment.guid);
-	logs[commentIndex] = comment;
-	return {...state, componentState: { ...state.componentState, logs }};
+export const updateCommentSuccess = (state = INITIAL_STATE, { comment, riskId }) => {
+	const risksMap = cloneDeep(state.risksMap);
+	const commentIndex = risksMap[riskId].comments.findIndex((log) => log.guid === comment.guid);
+	risksMap[riskId].comments[commentIndex] = comment;
+
+	return { ...state, risksMap };
 };
 
-export const deleteCommentSuccess = (state = INITIAL_STATE, { commentGuid }) => {
-	const logs = cloneDeep(state.componentState.logs);
-	const updatedLogs = logs.filter((log) => log.guid !== commentGuid );
-	return {...state, componentState: { ...state.componentState, logs: updatedLogs }};
+export const deleteCommentSuccess = (state = INITIAL_STATE, { commentGuid, riskId }) => {
+	const risksMap = cloneDeep(state.risksMap);
+	const updatedComments = risksMap[riskId].comments.filter((log) => log.guid !== commentGuid);
+	risksMap[riskId].comments = updatedComments;
+
+	return { ...state, risksMap };
 };
 
 export const reducer = createReducer(INITIAL_STATE, {

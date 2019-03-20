@@ -20,7 +20,7 @@ import { all, put, select, takeLatest } from 'redux-saga/effects';
 
 import * as API from '../../services/api';
 import { getAngularService, dispatch, getState, runAngularViewerTransition } from '../../helpers/migration';
-import { getRiskPinColor, prepareRisk } from '../../helpers/risks';
+import { getRiskPinColor, getValidNumber, prepareRisk } from '../../helpers/risks';
 import { prepareComments, prepareComment } from '../../helpers/comments';
 import { Cache } from '../../services/cache';
 import { Viewer } from '../../services/viewer/viewer';
@@ -44,10 +44,11 @@ export function* fetchRisks({teamspace, modelId, revision}) {
 	try {
 		const {data} = yield API.getRisks(teamspace, modelId, revision);
 		const jobs = yield select(selectJobsList);
+
 		const preparedRisks = data.map((risk) => prepareRisk(risk, jobs));
-		yield put(RisksActions.fetchRisksSuccess(preparedRisks));
 		const filteredRisks = searchByFilters(preparedRisks, [], false);
 
+		yield put(RisksActions.fetchRisksSuccess(preparedRisks));
 		yield put(RisksActions.renderPins(filteredRisks));
 	} catch (error) {
 		yield put(DialogActions.showErrorDialog('get', 'risks', error));
@@ -81,9 +82,7 @@ const createGroupData = (name, nodes) => {
 };
 
 const createGroup = (risk, objectInfo, teamspace, model) => {
-	// Create a group of selected objects
 	const highlightedGroupData = createGroupData(risk.name, objectInfo.highlightedNodes);
-	// Create a group of hidden objects
 	const hiddenGroupData = createGroupData(risk.name, objectInfo.hiddenNodes);
 
 	return Promise.all([
@@ -146,7 +145,6 @@ export function* saveRisk({ teamspace, model, riskData, revision, filteredRisks 
 			scale: 1.0
 		};
 
-		// Pin data
 		const pinData = Viewer.getPinData();
 		if (pinData !== null) {
 			risk.pickedPos = pinData.pickedPos;
@@ -163,6 +161,7 @@ export function* saveRisk({ teamspace, model, riskData, revision, filteredRisks 
 		const jobs = yield select(selectJobsList);
 		const preparedRisk = prepareRisk(savedRisk, jobs);
 
+		// FIXME showDetails is not the same as in issues
 		yield put(RisksActions.showDetails(preparedRisk, [...filteredRisks, preparedRisk], revision));
 		yield put(RisksActions.saveRiskSuccess(preparedRisk));
 		yield put(SnackbarActions.show('Risk created'));
@@ -174,7 +173,6 @@ export function* saveRisk({ teamspace, model, riskData, revision, filteredRisks 
 export function* updateRisk({ teamspace, modelId, riskData }) {
 	try {
 		const { data: updatedRisk } = yield API.updateRisk(teamspace, modelId, riskData);
-
 		const AnalyticService = getAngularService('AnalyticService') as any;
 		yield AnalyticService.sendEvent({
 			eventCategory: 'Risk',
@@ -184,6 +182,7 @@ export function* updateRisk({ teamspace, modelId, riskData }) {
 		toggleRiskPin(riskData, true);
 		const jobs = yield select(selectJobsList);
 		const preparedRisk = prepareRisk(updatedRisk, jobs);
+
 		yield put(RisksActions.saveRiskSuccess(preparedRisk));
 		yield put(SnackbarActions.show('Risk updated'));
 	} catch (error) {
@@ -211,7 +210,7 @@ export function* postComment({ teamspace, modelId, riskData }) {
 		const { data: comment } = yield API.updateRisk(teamspace, modelId, riskData);
 		const preparedComment = yield prepareComment(comment);
 
-		yield put(RisksActions.createCommentSuccess(preparedComment));
+		yield put(RisksActions.createCommentSuccess(preparedComment, riskData._id));
 		yield put(SnackbarActions.show('Risk comment added'));
 	} catch (error) {
 		yield put(DialogActions.showErrorDialog('post', 'risk comment', error));
@@ -230,7 +229,7 @@ export function* removeComment({ teamspace, modelId, riskData }) {
 		};
 
 		yield API.updateRisk(teamspace, modelId, commentData);
-		yield put(RisksActions.deleteCommentSuccess(guid));
+		yield put(RisksActions.deleteCommentSuccess(guid, riskData._id));
 		yield put(SnackbarActions.show('Comment removed'));
 	} catch (error) {
 		yield put(DialogActions.showErrorDialog('remove', 'comment', error));
@@ -244,11 +243,13 @@ export function* renderPins({ filteredRisks }) {
 		const invisibleRisks = risksList.length !== filteredRisks.length
 			? differenceBy(risksList, filteredRisks, '_id')
 			: [] ;
-		const activeRiskId = yield select(selectActiveRiskId);
 
+		const activeRiskId = yield select(selectActiveRiskId);
 		const removePins = (risks) => risks.forEach((risk) => {
 			Viewer.removePin({ id: risk._id });
 		});
+
+		yield removePins(!shouldShowPins ? risksList : invisibleRisks);
 
 		if (shouldShowPins) {
 			for (let index = 0; index < filteredRisks.length; index++) {
@@ -257,9 +258,10 @@ export function* renderPins({ filteredRisks }) {
 				const pinPosition = risk.position && risk.position.length;
 
 				if (pinPosition) {
-					const levelOfRisk = (risk.overall_level_of_risk !== undefined) ? risk.overall_level_of_risk : 4;
+					const levelOfRisk = getValidNumber(risk.overall_level_of_risk, 4);
 					const isSelectedPin = activeRiskId && risk._id === activeRiskId;
 					const pinColor = getRiskPinColor(levelOfRisk, isSelectedPin);
+
 					Viewer.addPin({
 						id: risk._id,
 						type: 'risk',
@@ -273,7 +275,6 @@ export function* renderPins({ filteredRisks }) {
 				}
 			}
 		}
-		yield removePins(!shouldShowPins ? risksList : invisibleRisks);
 	} catch (error) {
 		yield put(DialogActions.showErrorDialog('show', 'pins', error));
 	}
@@ -549,7 +550,8 @@ const onUpdateCommentEvent = (updatedComment) => {
 
 const onCreateCommentEvent = (createdComment) => {
 	const preparedComment = prepareComment(createdComment);
-	dispatch(RisksActions.createCommentSuccess(preparedComment));
+	const riskId = selectActiveRiskId(getState());
+	dispatch(RisksActions.createCommentSuccess(preparedComment, riskId));
 };
 
 const onDeleteCommentEvent = (deletedComment) => {
