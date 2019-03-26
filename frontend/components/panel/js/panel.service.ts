@@ -407,7 +407,8 @@ export class PanelService {
 			icon: 'compare',
 			minHeight: 265,
 			fixedHeight: false,
-			options: []
+			options: [],
+			isReactComponent: true
 		});
 
 		this.panelCards.left.push({
