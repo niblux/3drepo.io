@@ -46,3 +46,7 @@ export const selectCurrentModel = createSelector(
 export const selectMetaKeys = createSelector(
 	selectModelDomain, (state) => state.metaKeys
 );
+
+export const selectIsFederation = createSelector(
+	selectSettings, (state) =>  Boolean(state.federate)
+);
