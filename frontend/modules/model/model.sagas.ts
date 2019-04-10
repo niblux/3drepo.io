@@ -19,7 +19,7 @@ import { cloneDeep } from 'lodash';
 import { put, takeLatest, select, all } from 'redux-saga/effects';
 
 import * as API from '../../services/api';
-import { getAngularService, dispatch, runAngularTimeout } from './../../helpers/migration';
+import { getAngularService, dispatch } from './../../helpers/migration';
 import { uploadFileStatuses } from './model.helpers';
 import { DialogActions } from '../dialog';
 import { ModelTypes, ModelActions } from './model.redux';
@@ -30,12 +30,13 @@ import { selectCurrentUser } from '../currentUser';
 export function* fetchSettings({ teamspace, modelId }) {
 	try {
 		yield put(ModelActions.setPendingState(true));
-		const [{ data: settings }, { data: metaKeys }] = yield all([
+		const [{ data: settings }, { data: revisions }] = yield all([
 			API.getModelSettings(teamspace, modelId),
-			API.getMetaKeys(teamspace, modelId)
+			API.getModelRevisions(teamspace, modelId)
 		]);
 
-		yield put(ModelActions.fetchSettingsSuccess(settings, metaKeys));
+		yield put(ModelActions.fetchRevisionsSuccess(revisions));
+		yield put(ModelActions.fetchSettingsSuccess(settings));
 		yield put(ModelActions.setPendingState(false));
 	} catch (e) {
 		yield put(DialogActions.showEndpointErrorDialog('fetch', 'model settings', e));
