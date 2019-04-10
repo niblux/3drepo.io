@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2018 3D Repo Ltd
+ *  Copyright (C) 2019 3D Repo Ltd
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as
@@ -56,6 +56,7 @@ interface IProps {
 	sendGetNotifications: () => void;
 	confirmSendDeleteAllNotifications: () => void;
 	sendUpdateNotificationRead: (id: string, read: boolean) => void;
+	sendUpdateAllNotificationsRead: (read: boolean) => void;
 	showUpdatedFailedError: (errorMessage: string) => void;
 	sendDeleteNotification: (id: string) => void;
 	deleteNotification: (notification: any) => void;
@@ -153,6 +154,13 @@ export class Notifications extends React.PureComponent<IProps, any> {
 		return false;
 	}
 
+	public markAllNotifications = (read) => (e: React.SyntheticEvent) => {
+		this.toggleMenu(e);
+		this.props.notifications.forEach((notification) => {
+			this.props.sendUpdateAllNotificationsRead(read);
+		});
+	}
+
 	public deleteAllNotifications = (e: React.SyntheticEvent) => {
 		this.toggleMenu(e);
 		this.props.confirmSendDeleteAllNotifications();
@@ -228,6 +236,16 @@ export class Notifications extends React.PureComponent<IProps, any> {
 					open={!!this.state.menuElement}
 					onClose={this.toggleMenu}
 				>
+					<MenuItem
+						onClick={this.markAllNotifications(true)}
+					>
+						Mark all as read
+					</MenuItem>
+					<MenuItem
+						onClick={this.markAllNotifications(false)}
+					>
+						Mark all as unread
+					</MenuItem>
 					<MenuItem
 						onClick={this.deleteAllNotifications}
 						disabled={!this.props.notifications.length}
