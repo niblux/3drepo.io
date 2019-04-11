@@ -14,7 +14,7 @@
  *    You should have received a copy of the GNU Affero General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { debounce } from 'lodash';
+import { debounce, last } from 'lodash';
 
 interface IBindings {
 	[key: string]: any;
@@ -85,10 +85,16 @@ class HeightSetterController implements ng.IController, IBindings {
 		if (!this.content) {
 			return 0;
 		}
-		const contentContainer = this.content[0].querySelector('.height-catcher');
+		const contentContainer = last(this.content[0].querySelectorAll('.height-catcher')) as any;
 		const prevContentHeight = contentContainer.previousSibling && contentContainer.previousSibling.offsetHeight;
 		const footerHeight = contentContainer.nextSibling && contentContainer.nextSibling.offsetHeight;
 		return contentContainer.scrollHeight + (prevContentHeight || 0) + (footerHeight || 0);
+	}
+
+	get partialsHeight() {
+		const partials = Array.from(this.content[0].querySelectorAll('.height-catcher--partial'));
+		const partialsHeight = partials.reduce((height, partial: any) => height += partial.offsetHeight, 0);
+		return partialsHeight;
 	}
 
 	public $onInit(): void {
@@ -98,7 +104,7 @@ class HeightSetterController implements ng.IController, IBindings {
 
 	public updateHeight = debounce(() => {
 		this.updateHeightTimeout = this.$timeout(() => {
-			const requestedHeight = this.contentHeight + this.headerHeight;
+			const requestedHeight = this.contentHeight + this.headerHeight + this.partialsHeight;
 
 			this.contentData.panelTakenHeight = this.headerHeight;
 			this.onHeightUpdate({
