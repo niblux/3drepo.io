@@ -98,7 +98,7 @@ export class PanelService {
 			type: 'issues',
 			title: 'Issues',
 			showLiteMode: true,
-			show: false, // issueId || !riskId,
+			show: issueId || !riskId,
 			help: 'List current issues',
 			icon: 'place',
 			menu: [
@@ -402,7 +402,7 @@ export class PanelService {
 			type: 'compare',
 			title: 'Compare',
 			showLiteMode: false,
-			show: true,
+			show: false,
 			help: 'Show clashes and differences between models',
 			icon: 'compare',
 			minHeight: 265,
