@@ -195,5 +195,6 @@ export const reducer = createReducer(INITIAL_STATE, {
 	[RisksTypes.TOGGLE_DETAILS_PENDING_STATE]: toggleDetailsPendingState,
 	[RisksTypes.CREATE_COMMENT_SUCCESS]: createCommentSuccess,
 	[RisksTypes.UPDATE_COMMENT_SUCCESS]: updateCommentSuccess,
-	[RisksTypes.DELETE_COMMENT_SUCCESS]: deleteCommentSuccess
+	[RisksTypes.DELETE_COMMENT_SUCCESS]: deleteCommentSuccess,
+	[RisksTypes.SHOW_CLOSE_INFO]: showCloseInfo
 });
