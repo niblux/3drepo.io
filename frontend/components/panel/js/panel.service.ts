@@ -395,7 +395,8 @@ export class PanelService {
 			options: [
 				{type: 'menu', visible: true},
 				{type: 'filter', visible: true}
-			]
+			],
+			isReactComponent: true
 		});
 
 		this.panelCards.left.push({
