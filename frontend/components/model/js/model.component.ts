@@ -266,6 +266,7 @@ class ModelController implements ng.IController {
 	private loadModelSettings() {
 		dispatch(ModelActions.fetchSettings(this.account, this.model));
 		dispatch(ModelActions.fetchMetaKeys(this.account, this.model));
+		dispatch(TreeActions.fetchTreeData(this.account, this.model));
 		dispatch(ViewpointsActions.fetchViewpoints(this.account, this.model));
 		dispatch(IssuesActions.fetchIssues(this.account, this.model, this.revision));
 		dispatch(RisksActions.fetchRisks(this.account, this.model, this.revision));
