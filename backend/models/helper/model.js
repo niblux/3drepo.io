@@ -83,7 +83,7 @@ function translateBouncerErrCode(bouncerErrorCode) {
 	];
 
 	const errObj =  bouncerErrToWebErr.length > bouncerErrorCode ?
-		bouncerErrToWebErr[bouncerErrorCode] : { res: responseCodes.FILE_IMPORT_UNKNOWN_ERR, userErr: false};
+		bouncerErrToWebErr[bouncerErrorCode] : { res: responseCodes.FILE_IMPORT_UNKNOWN_ERR, softFail: false, userErr: false};
 	errObj.res.bouncerErrorCode = bouncerErrorCode;
 	return errObj;
 }
