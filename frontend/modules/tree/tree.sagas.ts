@@ -173,8 +173,6 @@ export function* selectNode({ id }) {
 	try {
 		const accumMode = MultiSelect.isAccumMode();
 		const decumMode = MultiSelect.isDecumMode();
-
-		const selectedNodesMap = yield select(selectSelectedNodesMap);
 		const nodesIndexesMap = yield select(selectNodesIndexesMap);
 
 		const treeNodesList = yield select(selectTreeNodesList);
