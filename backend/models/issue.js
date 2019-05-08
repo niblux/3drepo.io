@@ -419,6 +419,18 @@ issue.createIssue = function(dbCol, newIssue) {
 	});
 };
 
+issue.addComment = async function (dbCol, issueId, revid, user, comment, viewpoint) {
+// commenter
+
+	viewpoint.guid = utils.generateUUID();
+	viewpoint = await View.clean(dbCol, viewpoint, fieldTypes["viewpoint"]);
+	comment = Comment.newTextComment(user,revid,comment, viewpoint);
+
+	const issuesColl = await db.getCollection(dbCol.account, dbCol.model + ".issues");
+	await issuesColl.update({_id: issueId}, {$push: {comments: comment, viewpoints: viewpoint}});
+	return {...comment, viewpoint};
+};
+
 issue.updateFromBCF = function(dbCol, issueToUpdate, changeSet) {
 	return db.getCollection(dbCol.account, dbCol.model + ".issues").then((_dbCol) => {
 		return _dbCol.update({_id: utils.stringToUUID(issueToUpdate._id)}, {$set: changeSet}).then(() => {

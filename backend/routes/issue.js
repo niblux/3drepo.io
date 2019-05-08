@@ -367,6 +367,8 @@ router.patch("/issues/:issueId.json", middlewares.issue.canComment, updateIssue,
  */
 router.post("/revision/:rid/issues.json", middlewares.issue.canCreate, storeIssue, responseCodes.onSuccessfulOperation);
 
+router.post("/revision/:rid/issues/comment", middlewares.issue.canCreate, addComment, responseCodes.onSuccessfulOperation);
+
 /**
  * @api {put} /:teamspace/:model/revision/"rid/issues/:issueId.json Update issue based on revision
  * @apiName updateIssue
@@ -391,6 +393,11 @@ function storeIssue(req, res, next) {
 	}).catch(err => {
 		responseCodes.onError(req, res, err);
 	});
+}
+
+function addComment(req, res, next) {
+//	const data = req.body;
+	res.status(200);
 }
 
 function updateIssue(req, res, next) {
