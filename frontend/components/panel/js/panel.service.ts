@@ -399,7 +399,7 @@ export class PanelService {
 			isReactComponent: true
 		});
 
-		this.panelCards.left.push({
+/* 		this.panelCards.left.push({
 			type: 'treeOld',
 			title: 'Tree Old',
 			showLiteMode: true,
@@ -439,7 +439,7 @@ export class PanelService {
 				{type: 'menu', visible: true},
 				{type: 'filter', visible: true}
 			],
-		});
+		}); */
 
 		this.panelCards.left.push({
 			type: 'compare',
