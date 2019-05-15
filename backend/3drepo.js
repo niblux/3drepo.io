@@ -91,6 +91,16 @@ function handleHTTPSRedirect() {
 				http_app.use(vhost(server.subdomain + "." + config.host, redirect));
 			}
 		});
+
+		if(config.redirect) {
+			const redirectArr = Array.isArray(config.redirect);
+			const redirectDomains = (redirectArr) ? config.redirect : [config.redirect];
+
+			redirectDomains.forEach((server) => {
+				server && http_app.use(vhost(server, redirect));
+			});
+		}
+
 		redirect.get("*", function(req, res) {
 			// Do not redirect if user uses IE6 because it doesn"t suppotr TLS 1.2
 			const isIe = req.headers["user-agent"].toLowerCase().indexOf("msie 6") === -1;
