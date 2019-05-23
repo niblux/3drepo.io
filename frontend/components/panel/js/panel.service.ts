@@ -68,7 +68,6 @@ export class PanelService {
 		'$filter',
 		'$state',
 		'EventService',
-		'TreeService',
 		'APIService',
 		'ViewerService'
 	];
@@ -80,7 +79,6 @@ export class PanelService {
 		private $filter: any,
 		private $state: any,
 		private EventService: any,
-		private TreeService: any,
 		private apiService: APIService,
 		private viewerService: any
 	) {
