@@ -25,7 +25,6 @@ import { DialogActions } from '../dialog';
 import { Viewer } from '../../services/viewer/viewer';
 import { SORT_ORDER_TYPES } from '../../constants/sorting';
 import * as API from '../../services/api';
-import { getAngularService } from '../../helpers/migration';
 import {
 	selectSortType,
 	selectSortOrder,
@@ -39,7 +38,7 @@ import {
 	selectComponentState,
 	selectCompareModels
 } from './compare.selectors';
-import { selectTreeNodesList, TreeActions } from '../tree';
+import { TreeActions } from '../tree';
 import { VISIBILITY_STATES } from '../../constants/tree';
 
 const getNextRevision = (revisions, currentRevision) => {
@@ -263,6 +262,7 @@ function* startComparisonOfFederation() {
 	const modelsToLoad = [];
 	for (let index = 0; index < targetModels.length; index++) {
 		const model = targetModels[index];
+
 		if (model && selectedModels[model._id]) {
 			const targetRevision = isDiff ? model.targetDiffRevision : model.targetClashRevision;
 			const sharedRevisionModel = baseModels.find(({ baseRevision }) => baseRevision.name === targetRevision.name);
