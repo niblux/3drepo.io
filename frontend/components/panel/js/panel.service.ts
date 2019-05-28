@@ -96,7 +96,7 @@ export class PanelService {
 			type: 'issues',
 			title: 'Issues',
 			showLiteMode: true,
-			show: false, // issueId || !riskId,
+			show: issueId || !riskId,
 			help: 'List current issues',
 			icon: 'place',
 			menu: [
@@ -358,7 +358,7 @@ export class PanelService {
 			type: 'tree',
 			title: 'Tree',
 			showLiteMode: true,
-			show: true,
+			show: false,
 			help: 'Model elements shown in a tree structure',
 			icon: 'device_hub',
 			minHeight: 80,
